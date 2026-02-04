@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing URL Detector</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #141e30, #243b55);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .glass-card {
+            width: 420px;
+            padding: 35px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            color: white;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        input {
+            width: 90%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            margin-top: 20px;
+            font-size: 15px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 22px;
+            border: none;
+            background: #0099ff;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        button:hover {
+            background: #007acc;
+            transform: scale(1.05);
+        }
+
+        .result-box {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="glass-card">
+        <h2>🔒 Phishing URL Detector</h2>
+
+        <input type="text" id="urlInput" placeholder="Enter URL here...">
+
+        <button onclick="checkURL()">Check</button>
+
+        <div id="result"></div>
+    </div>
+
+
+    <script>
+        async function checkURL() {
+            let url = document.getElementById("urlInput").value;
+
+            document.getElementById("result").innerHTML =
+                "<p style='color:yellow'>Checking...</p>";
+
+            try {
+                let apiURL = `http://127.0.0.1:8000/predict_url/?url=${encodeURIComponent(url)}`;
+                let response = await fetch(apiURL);
+                let data = await response.json();
+
+                // ------------------ ERROR HANDLING ------------------
+                if (!data || data.prediction === undefined || data.confidence === undefined) {
+                    document.getElementById("result").innerHTML = `
+                        <div class="result-box" style="border-left: 5px solid orange;">
+                            <h3 style="color:orange;">⚠️ API Error</h3>
+                            <p>Backend did not return a valid response.</p>
+                        </div>
+                    `;
+                    console.log("DEBUG API RESPONSE:", data);
+                    return;
+                }
+                // ------------------------------------------------------
+
+                let color = data.prediction === "Phishing" ? "red" : "lightgreen";
+
+                document.getElementById("result").innerHTML = `
+                    <div class="result-box" style="border-left: 5px solid ${color}">
+                        <h3 style="color:${color}">Result: ${data.prediction}</h3>
+                        <p>Confidence: ${(data.confidence * 100).toFixed(2)}%</p>
+                    </div>
+                `;
+            } catch (err) {
+                document.getElementById("result").innerHTML = `
+                    <div class="result-box" style="border-left: 5px solid orange;">
+                        <h3 style="color:orange;">⚠️ Network Error</h3>
+                        <p>Unable to connect to backend API.</p>
+                    </div>
+                `;
+                console.error("NETWORK ERROR:", err);
+            }
+        }
+    </script>
+
+</body>
+</html>
