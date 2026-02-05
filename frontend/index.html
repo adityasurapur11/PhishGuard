@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phishing URL Detector</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
         body {
@@ -25,7 +25,7 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             text-align: center;
             color: white;
-            animation: fadeIn 0.8s ease-out;
+            animation: fadeIn 0.6s ease-out;
         }
 
         @keyframes fadeIn {
@@ -66,67 +66,74 @@
             padding: 15px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 12px;
+            text-align: left;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="glass-card">
-        <h2>🔒 Phishing URL Detector</h2>
+<div class="glass-card">
+    <h2>🔒 Phishing URL Detector</h2>
 
-        <input type="text" id="urlInput" placeholder="Enter URL here...">
+    <input type="text" id="urlInput" placeholder="Enter URL here..." />
 
-        <button onclick="checkURL()">Check</button>
+    <button onclick="checkURL()">Check</button>
 
-        <div id="result"></div>
-    </div>
+    <div id="result"></div>
+</div>
 
+<script>
+async function checkURL() {
+    const url = document.getElementById("urlInput").value.trim();
+    const resultDiv = document.getElementById("result");
 
-    <script>
-        async function checkURL() {
-            let url = document.getElementById("urlInput").value;
+    if (!url) {
+        resultDiv.innerHTML = "<p style='color:yellow'>Please enter a URL</p>";
+        return;
+    }
 
-            document.getElementById("result").innerHTML =
-                "<p style='color:yellow'>Checking...</p>";
+    resultDiv.innerHTML = "<p style='color:yellow'>Checking...</p>";
 
-            try {
-                let apiURL = `http://127.0.0.1:8000/predict_url/?url=${encodeURIComponent(url)}`;
-                let response = await fetch(apiURL);
-                let data = await response.json();
+    try {
+        const response = await fetch(
+            `http://127.0.0.1:8000/predict_url/?url=${encodeURIComponent(url)}`
+        );
 
-                // ------------------ ERROR HANDLING ------------------
-                if (!data || data.prediction === undefined || data.confidence === undefined) {
-                    document.getElementById("result").innerHTML = `
-                        <div class="result-box" style="border-left: 5px solid orange;">
-                            <h3 style="color:orange;">⚠️ API Error</h3>
-                            <p>Backend did not return a valid response.</p>
-                        </div>
-                    `;
-                    console.log("DEBUG API RESPONSE:", data);
-                    return;
-                }
-                // ------------------------------------------------------
-
-                let color = data.prediction === "Phishing" ? "red" : "lightgreen";
-
-                document.getElementById("result").innerHTML = `
-                    <div class="result-box" style="border-left: 5px solid ${color}">
-                        <h3 style="color:${color}">Result: ${data.prediction}</h3>
-                        <p>Confidence: ${(data.confidence * 100).toFixed(2)}%</p>
-                    </div>
-                `;
-            } catch (err) {
-                document.getElementById("result").innerHTML = `
-                    <div class="result-box" style="border-left: 5px solid orange;">
-                        <h3 style="color:orange;">⚠️ Network Error</h3>
-                        <p>Unable to connect to backend API.</p>
-                    </div>
-                `;
-                console.error("NETWORK ERROR:", err);
-            }
+        if (!response.ok) {
+            throw new Error("API error");
         }
-    </script>
+
+        const data = await response.json();
+        console.log("API RESPONSE:", data);
+
+        if (!data.prediction || data.confidence === undefined) {
+            throw new Error("Invalid response");
+        }
+
+        let color = "orange";
+        if (data.prediction === "Safe") color = "lightgreen";
+        if (data.prediction === "Phishing") color = "red";
+
+        resultDiv.innerHTML = `
+            <div class="result-box" style="border-left: 5px solid ${color}">
+                <h3 style="color:${color}">Result: ${data.prediction}</h3>
+                <p><b>Confidence:</b> ${(data.confidence * 100).toFixed(2)}%</p>
+                <p><b>Source:</b> ${data.source}</p>
+            </div>
+        `;
+    }
+    catch (err) {
+        console.error(err);
+        resultDiv.innerHTML = `
+            <div class="result-box" style="border-left: 5px solid orange">
+                <h3 style="color:orange">⚠️ Error</h3>
+                <p>Unable to connect to backend API</p>
+            </div>
+        `;
+    }
+}
+</script>
 
 </body>
 </html>
