@@ -4,28 +4,29 @@
     <meta charset="UTF-8">
     <title>Phishing URL Detector</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #141e30, #243b55);
+            background: linear-gradient(135deg, #0f172a, #1e293b);
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            color: white;
         }
 
         .glass-card {
-            width: 420px;
-            padding: 35px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(15px);
-            border-radius: 18px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 450px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             text-align: center;
-            color: white;
-            animation: fadeIn 0.6s ease-out;
+            animation: fadeIn 0.8s ease-out;
         }
 
         @keyframes fadeIn {
@@ -33,106 +34,226 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        h2 { margin-bottom: 30px; font-weight: 600; letter-spacing: -0.5px; }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
         input {
-            width: 90%;
-            padding: 12px;
-            border-radius: 10px;
-            border: none;
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            color: white;
+            font-size: 16px;
             outline: none;
-            margin-top: 20px;
-            font-size: 15px;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: #3b82f6;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
         }
 
         button {
-            margin-top: 20px;
-            padding: 12px 22px;
+            width: 100%;
+            padding: 15px;
             border: none;
-            background: #0099ff;
-            border-radius: 12px;
+            background: #3b82f6;
+            border-radius: 14px;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 600;
             color: white;
             cursor: pointer;
-            transition: 0.25s;
+            transition: 0.3s;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
         }
 
         button:hover {
-            background: #007acc;
-            transform: scale(1.05);
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
         }
 
-        .result-box {
-            margin-top: 25px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+        button:active { transform: translateY(0); }
+
+        #result { margin-top: 30px; min-height: 100px; }
+
+        .result-card {
+            padding: 20px;
+            border-radius: 16px;
             text-align: left;
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 6px solid #ccc;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .confidence-bar-container {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .confidence-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease-in-out;
+        }
+
+        .source-tag {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 10px;
+            display: block;
+        }
+
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
-
 <body>
 
 <div class="glass-card">
-    <h2>🔒 Phishing URL Detector</h2>
+    <h2>🛡️ ShieldScan AI</h2>
+    <p style="color: rgba(255,255,255,0.6); margin-top: -20px; margin-bottom: 30px; font-size: 14px;">Real-time Phishing Threat Detection</p>
 
-    <input type="text" id="urlInput" placeholder="Enter URL here..." />
+    <div class="input-group">
+        <input type="text" id="urlInput" placeholder="Enter URL to analyze (e.g., google.com)" />
+    </div>
 
-    <button onclick="checkURL()">Check</button>
+    <button onclick="checkURL()" id="checkBtn">Analyze URL</button>
 
     <div id="result"></div>
 </div>
 
 <script>
 async function checkURL() {
-    const url = document.getElementById("urlInput").value.trim();
+    const urlInput = document.getElementById("urlInput");
+    const checkBtn = document.getElementById("checkBtn");
     const resultDiv = document.getElementById("result");
+    const url = urlInput.value.trim();
 
     if (!url) {
-        resultDiv.innerHTML = "<p style='color:yellow'>Please enter a URL</p>";
+        resultDiv.innerHTML = "<p style='color:#fbbf24; font-size: 14px;'>Please enter a valid URL to proceed.</p>";
         return;
     }
 
-    resultDiv.innerHTML = "<p style='color:yellow'>Checking...</p>";
+    // UI Feedback
+    checkBtn.disabled = true;
+    checkBtn.innerHTML = '<span class="loader"></span> Analyzing...';
+    resultDiv.innerHTML = "";
 
     try {
         const response = await fetch(
             `http://127.0.0.1:8000/predict_url/?url=${encodeURIComponent(url)}`
         );
 
-        if (!response.ok) {
-            throw new Error("API error");
-        }
+        if (!response.ok) throw new Error("Backend connection failed");
 
         const data = await response.json();
-        console.log("API RESPONSE:", data);
+        
+        let color, bgColor, badgeColor;
+        const confidencePercent = (data.confidence * 100).toFixed(1);
 
-        if (!data.prediction || data.confidence === undefined) {
-            throw new Error("Invalid response");
+        if (data.prediction === "Safe") {
+            color = "#10b981"; // Emerald 500
+            badgeColor = "rgba(16, 185, 129, 0.2)";
+        } else if (data.prediction === "Suspicious") {
+            color = "#f59e0b"; // Amber 500
+            badgeColor = "rgba(245, 158, 11, 0.2)";
+        } else {
+            color = "#ef4444"; // Red 500
+            badgeColor = "rgba(239, 68, 68, 0.2)";
         }
 
-        let color = "orange";
-        if (data.prediction === "Safe") color = "lightgreen";
-        if (data.prediction === "Phishing") color = "red";
+        resultDiv.innerHTML = `
+            <div class="result-card" style="border-left-color: ${color}">
+                <div class="result-header">
+                    <span style="font-weight: 600; color: ${color}; font-size: 18px;">${data.prediction}</span>
+                    <span class="status-badge" style="background: ${badgeColor}; color: ${color}">${data.prediction === 'Safe' ? 'Verified' : 'Risk Detected'}</span>
+                </div>
+                
+                <div style="font-size: 14px; margin-bottom: 5px; display: flex; justify-content: space-between;">
+                    <span>Confidence Score</span>
+                    <span style="font-weight: 600;">${confidencePercent}%</span>
+                </div>
+                
+                <div class="confidence-bar-container">
+                    <div class="confidence-bar" style="width: 0%; background: ${color}"></div>
+                </div>
 
-        resultDiv.innerHTML = `
-            <div class="result-box" style="border-left: 5px solid ${color}">
-                <h3 style="color:${color}">Result: ${data.prediction}</h3>
-                <p><b>Confidence:</b> ${(data.confidence * 100).toFixed(2)}%</p>
-                <p><b>Source:</b> ${data.source}</p>
+                <span class="source-tag">Analysis Source: ${data.source}</span>
             </div>
         `;
-    }
-    catch (err) {
-        console.error(err);
+
+        // Animate bar
+        setTimeout(() => {
+            document.querySelector('.confidence-bar').style.width = confidencePercent + '%';
+        }, 100);
+
+    } catch (err) {
         resultDiv.innerHTML = `
-            <div class="result-box" style="border-left: 5px solid orange">
-                <h3 style="color:orange">⚠️ Error</h3>
-                <p>Unable to connect to backend API</p>
+            <div class="result-card" style="border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1)">
+                <span style="font-weight: 600; color: #ef4444;">Connection Error</span>
+                <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 8px;">
+                    Make sure the backend server is running at 127.0.0.1:8000
+                </p>
             </div>
         `;
+    } finally {
+        checkBtn.disabled = false;
+        checkBtn.innerHTML = 'Analyze URL';
     }
 }
+
+// Allow Enter key
+document.getElementById("urlInput").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        checkURL();
+    }
+});
 </script>
 
 </body>
